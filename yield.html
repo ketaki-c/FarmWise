@@ -70,87 +70,97 @@
             from { transform: scale(1); box-shadow: 0 0 10px rgba(255, 235, 59, 0.8); }
             to { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 235, 59, 1); }
         }
-   
 
-input, select {
-    width: 80%;
-    padding: 8px;
-    margin: 10px;
-    border-radius: 5px;
-    border: none;
-}
+        input, select {
+            width: 80%;
+            padding: 8px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+        }
 
-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-}
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
 
-th, td {
-    border: 1px solid white;
-    padding: 8px;
-}
+        th, td {
+            border: 1px solid white;
+            padding: 8px;
+        }
 
-th {
-    background: #FF9800;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
+        th {
+            background: #FF9800;
+        }
     </style>
     <script>
-        function calculateYield() {
-    let cropSelect = document.getElementById("crop");
-    let selectedOption = cropSelect.options[cropSelect.selectedIndex];
-    let cropName = selectedOption.text;
-    let yieldPerAcre = parseFloat(selectedOption.getAttribute("data-yield"));
-    let pricePerKg = parseFloat(selectedOption.getAttribute("data-price"));
+        async function fetchCropPrice(cropName) {
+            try {
+                const response = await fetch(`https://agmarknet.gov.in/api/crop-prices?crop=${cropName}`);
+                const data = await response.json();
+                return data.price || 20; // Default price if not found
+            } catch (error) {
+                console.error("Error fetching crop price:", error);
+                return 20; // Default fallback price
+            }
+        }
 
-    let acres = parseFloat(document.getElementById("acres").value);
-    if (isNaN(acres) || acres <= 0) {
-        alert("Please enter a valid number of acres.");
-        return;
-    }
+        async function calculateYield() {
+            let cropSelect = document.getElementById("crop");
+            let selectedOption = cropSelect.options[cropSelect.selectedIndex];
+            let cropName = selectedOption.text;
+            let yieldPerAcre = parseFloat(selectedOption.getAttribute("data-yield"));
+            let pricePerKg = await fetchCropPrice(cropName);
 
-    let expectedYield = (yieldPerAcre * acres).toFixed(2);
-    let totalIncome = (expectedYield * pricePerKg * 1000).toFixed(2); // Converting tons to kg
+            let acres = parseFloat(document.getElementById("acres").value);
+            if (isNaN(acres) || acres <= 0) {
+                alert("Please enter a valid number of acres.");
+                return;
+            }
 
-    let resultBody = document.getElementById("resultBody");
-    resultBody.innerHTML = `
-        <tr>
-            <td>${cropName}</td>
-            <td>${acres}</td>
-            <td>${yieldPerAcre} tons</td>
-            <td>${expectedYield} tons</td>
-            <td>₹${pricePerKg} per kg</td>
-            <td>₹${totalIncome}</td>
-        </tr>
-    `;
-}
+            let expectedYield = (yieldPerAcre * acres).toFixed(2);
+            let totalIncome = (expectedYield * pricePerKg * 1000).toFixed(2); // Converting tons to kg
 
-// Function to navigate between pages
-function navigateTo(page) {
-    window.location.href = page;
-}
+            let resultBody = document.getElementById("resultBody");
+            resultBody.innerHTML = `
+                <tr>
+                    <td>${cropName}</td>
+                    <td>${acres}</td>
+                    <td>${yieldPerAcre} tons</td>
+                    <td>${expectedYield} tons</td>
+                    <td>₹${pricePerKg} per kg</td>
+                    <td>₹${totalIncome}</td>
+                </tr>
+            `;
+        }
 
+        function navigateTo(page) {
+            window.location.href = page;
+        }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yield Predictor</title>
-    
 </head>
 <body>
     <div class="container">
         <h1>Yield Predictor</h1>
         <label for="crop">Select Crop:</label>
         <select id="crop">
-            <option value="wheat" data-yield="3.5" data-price="25">Wheat</option>
-            <option value="rice" data-yield="4.2" data-price="30">Rice</option>
-            <option value="corn" data-yield="5.0" data-price="20">Corn</option>
-            <option value="sugarcane" data-yield="6.0" data-price="40">Sugarcane</option>
+            <option value="millet" data-yield="2.5">🌾 Millet</option>
+            <option value="sorghum" data-yield="3.0">🌾 Sorghum</option>
+            <option value="cotton" data-yield="2.8">🌿 Cotton</option>
+            <option value="wheat" data-yield="3.5">🌾 Wheat</option>
+            <option value="maize" data-yield="4.0">🌽 Maize</option>
+            <option value="barley" data-yield="3.2">🌾 Barley</option>
+            <option value="potato" data-yield="5.0">🥔 Potato</option>
+            <option value="peas" data-yield="3.8">🌱 Peas</option>
+            <option value="carrot" data-yield="4.5">🥕 Carrot</option>
+            <option value="rice" data-yield="4.2">🍚 Rice</option>
+            <option value="sugarcane" data-yield="6.0">🍬 Sugarcane</option>
+            <option value="groundnut" data-yield="2.7">🥜 Groundnut</option>
+            <option value="sunflower" data-yield="3.3">🌻 Sunflower</option>
         </select>
 
         <label for="acres">Enter Acres:</label>
@@ -169,8 +179,7 @@ function navigateTo(page) {
                     <th>Total Income</th>
                 </tr>
             </thead>
-            <tbody id="resultBody">
-            </tbody>
+            <tbody id="resultBody"></tbody>
         </table>
 
         <button onclick="navigateTo('index.html')">Return to Home</button>

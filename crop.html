@@ -76,77 +76,76 @@
             window.location.href = page;
         }
 
-        async function fetchWeatherAndSoilData() {
-            const weatherApiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
-            const geoapifyApiKey = 'YOUR_GEOAPIFY_API_KEY';
-            
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                
-                // Fetch Weather Data
-                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
-                const weatherRes = await fetch(weatherUrl);
-                const weatherData = await weatherRes.json();
-                
-                const temperature = weatherData.main.temp;
-                const humidity = weatherData.main.humidity;
-                const windSpeed = weatherData.wind.speed;
-                
-                // Fetch Soil Data
-                const soilUrl = `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${geoapifyApiKey}`;
-                const soilRes = await fetch(soilUrl);
-                const soilData = await soilRes.json();
-                
-                const soilType = soilData.features[0]?.properties?.soil_type || 'Unknown';
-                
-                // Determine Crop Recommendations
-                let crops = recommendCrops(soilType, temperature, humidity);
-                
-                document.getElementById('crop-recommendations').innerHTML = `
-                    <p>Best Crops: ${crops.join(', ')}</p>
-                `;
-            });
-        }
-
-        function recommendCrops(soilType, temperature, humidity) {
-            let crops = [];
-            
-            if (soilType.includes('clay')) {
-                crops.push('Rice', 'Sugarcane', 'Wheat');
-            } else if (soilType.includes('loam')) {
-                crops.push('Maize', 'Barley', 'Potato');
-            } else if (soilType.includes('sandy')) {
-                crops.push('Millet', 'Groundnut', 'Cassava');
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        fetchWeatherData(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error);
+                    }
+                );
             } else {
-                crops.push('General Vegetables', 'Pulses', 'Legumes');
+                alert('Geolocation is not supported by this browser.');
             }
-            
-            return crops;
         }
 
-        function searchByPincode() {
-            const pincode = document.getElementById('pincode').value;
-            const geoapifyApiKey = 'YOUR_GEOAPIFY_API_KEY';
+        async function fetchWeatherData(lat, lon) {
+            const weatherApiKey = '4b266fa6bc11617c45a9bd846a60957b';
             
-            fetch(`https://api.geoapify.com/v1/geocode/search?text=${pincode}&apiKey=${geoapifyApiKey}`)
-                .then(response => response.json())
-                .then(data => {
-                    const lat = data.features[0].geometry.coordinates[1];
-                    const lon = data.features[0].geometry.coordinates[0];
-                    fetchWeatherAndSoilData(lat, lon);
-                });
+            // Fetch Weather Data
+            const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${weatherApiKey}`;
+            const weatherRes = await fetch(weatherUrl);
+            const weatherData = await weatherRes.json();
+            
+            const temperature = weatherData.main.temp;
+            const humidity = weatherData.main.humidity;
+            
+            // Determine Crop Recommendations
+            let crops = recommendCrops(temperature, humidity);
+            
+            document.getElementById('crop-recommendations').innerHTML = `
+                <p><strong>Recommended Crops:</strong></p>
+                <p>${crops.map(crop => `<strong>${crop.name}</strong> (${crop.type}): ${crop.reason}`).join('<br>')}</p>
+            `;
         }
+
+        function recommendCrops(temperature, humidity) {
+    let crops = [];
+    
+    if (temperature > 30) {
+        crops.push({ name: '🌾 Millet', type: 'Cereal', reason: 'Tolerates high temperatures and drought conditions.' });
+        crops.push({ name: '🌿 Sorghum', type: 'Cereal', reason: 'Grows well in hot climates with minimal water.' });
+        crops.push({ name: '👕 Cotton', type: 'Cash Crop', reason: 'Requires warm temperatures for optimal growth.' });
+    } else if (temperature > 20) {
+        crops.push({ name: '🌾 Wheat', type: 'Cereal', reason: 'Thrives in moderate temperatures.' });
+        crops.push({ name: '🌽 Maize', type: 'Cereal', reason: 'Grows best in temperatures between 20-30°C.' });
+        crops.push({ name: '🍺 Barley', type: 'Cereal', reason: 'Prefers mild to warm temperatures.' });
+    } else {
+        crops.push({ name: '🥔 Potato', type: 'Vegetable', reason: 'Grows well in cooler temperatures.' });
+        crops.push({ name: '🌱 Peas', type: 'Legume', reason: 'Thrives in cool, humid conditions.' });
+        crops.push({ name: '🥕 Carrot', type: 'Vegetable', reason: 'Requires cooler climates for optimal growth.' });
+    }
+    
+    if (humidity > 70) {
+        crops.push({ name: '🌾 Rice', type: 'Cereal', reason: 'Requires high humidity and water retention.' });
+        crops.push({ name: '🍬 Sugarcane', type: 'Cash Crop', reason: 'Grows well in high humidity regions.' });
+    } else if (humidity < 40) {
+        crops.push({ name: '🥜 Groundnut', type: 'Legume', reason: 'Thrives in dry conditions.' });
+        crops.push({ name: '🌻 Sunflower', type: 'Oilseed', reason: 'Prefers lower humidity environments.' });
+    }
+    
+    return crops;
+}
+
+    
     </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crop Recommendations</title>
 </head>
-<body onload="fetchWeatherAndSoilData()">
+<body onload="getUserLocation()">
     <div class="container">
         <h1>Crop Recommendations</h1>
-        <input type="text" id="pincode" placeholder="Enter Pincode" />
-        <button onclick="searchByPincode()">Search</button>
         <div id="crop-recommendations">
             <p>Loading...</p>
         </div>
