@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Background Image */
+        body {
+            background: url('https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWdyaWN1bHR1cmV8ZW58MHx8MHx8fDA%3D') no-repeat center center/cover;
+            color: black;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Weather Container */
+        .container {
+            max-width: 700px;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Spacing for Text */
+        .container p {
+            font-size: 20px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        /* Button Styling */
+        button {
+            background: #FFEB3B;
+            color: black;
+            padding: 15px 30px;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 50px;
+            transition: all 0.3s ease-in-out;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 235, 59, 0.8);
+            animation: pulse 1.5s infinite alternate ease-in-out;
+        }
+
+        /* Button Hover Effect */
+        button:hover {
+            background: #fbc02d;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 1);
+            transform: scale(1.1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); box-shadow: 0 0 10px rgba(255, 235, 59, 0.8); }
+            to { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 235, 59, 1); }
+        }
+    </style>
+    <script>
+        const apiKey = "e36eef4f7e8b4b1dadea942e50fa0af3";
+        const soilApiUrl = "https://api.agromonitoring.com/agro/1.0/soil?appid=1fab214e09f58ed8b25798b70208b059";
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    fetchSoilData(position.coords.latitude, position.coords.longitude);
+                }, error => {
+                    alert("Geolocation error: " + error.message);
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function fetchByPincode() {
+            let pincode = document.getElementById("pincode").value;
+            if (!pincode) {
+                alert("Please enter a valid pincode");
+                return;
+            }
+            fetch(`https://api.geoapify.com/v1/geocode/search?text=${pincode}&apiKey=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features.length > 0) {
+                        let { lat, lon } = data.features[0].properties;
+                        fetchSoilData(lat, lon);
+                    } else {
+                        alert("Invalid Pincode. Please try again.");
+                    }
+                })
+                .catch(error => console.error("Error fetching location: ", error));
+        }
+
+        function fetchSoilData(lat, lon) {
+            fetch(`${soilApiUrl}&lat=${lat}&lon=${lon}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("soilType").textContent = determineSoilType(data.moisture);
+                    document.getElementById("moisture").textContent = data.moisture ? data.moisture.toFixed(2) : "N/A";
+                    document.getElementById("temp").textContent = data.t10 ? (data.t10 - 273.15).toFixed(2) + "°C" : "N/A";
+                    document.getElementById("management").textContent = getSoilManagement(determineSoilType(data.moisture));
+                })
+                .catch(error => console.error("Error fetching soil data: ", error));
+        }
+
+        function determineSoilType(moisture) {
+            if (moisture < 0.1) return "Sandy Soil";
+            if (moisture < 0.25) return "Loamy Soil";
+            return "Clay Soil";
+        }
+
+        function getSoilManagement(soilType) {
+            const practices = {
+                "Sandy Soil": "Add organic matter, use mulch, water frequently.",
+                "Loamy Soil": "Maintain organic content, rotate crops, prevent compaction.",
+                "Clay Soil": "Improve drainage, avoid overwatering, add compost."
+            };
+            return practices[soilType] || "No data available.";
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Soil Management</h1>
+        <input type="text" id="pincode" placeholder="Enter Pincode">
+        <button onclick="fetchByPincode()">Get Data by Pincode</button>
+        <button onclick="getLocation()">Use My Location</button>
+
+        <p><strong>Soil Type:</strong> <span id="soilType">N/A</span></p>
+        <p><strong>Moisture:</strong> <span id="moisture">N/A</span></p>
+        <p><strong>Temperature:</strong> <span id="temp">N/A</span></p>
+        <p><strong>Best Management Practices:</strong> <span id="management">N/A</span></p>
+        <button onclick="navigateTo('crop.html')">Next: Crop Recommendation</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmWise - One Stop Farming Solution</title>
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Background Image */
+        body {
+            background: url('https://images.unsplash.com/photo-1499529112087-3cb3b73cec95?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWdyaWN1bHR1cmV8ZW58MHx8MHx8fDA%3D') no-repeat center center/cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Dark Overlay for Readability */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        /* Landing Page Content */
+        .landing-page {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            padding: 40px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        /* Company Name */
+        h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        /* Animated "Get Started" Button */
+        .animated-button {
+            font-size: 1.5rem;
+            padding: 15px 35px;
+            background: #ffeb3b;
+            color: black;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 235, 59, 0.8);
+            transition: all 0.3s ease-in-out;
+            animation: pulse 1.5s infinite alternate ease-in-out;
+        }
+
+        /* Button Hover Effect */
+        .animated-button:hover {
+            background: #fbc02d;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 1);
+            transform: scale(1.1);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); box-shadow: 0 0 10px rgba(255, 235, 59, 0.8); }
+            to { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 235, 59, 1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-page">
+        <h1>FarmWise</h1>
+        <button id="getStartedBtn" class="animated-button">Get Started</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('getStartedBtn').addEventListener('click', function() {
+                alert("Let's get started!");
+                window.location.href = "dashboard.html"; 
+            });
+        });
+    </script>
+</body>
+</html>
